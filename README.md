@@ -1,6 +1,6 @@
 # Omi the Cat
 
-**A Tamagotchi for your bar.** Omi is a tiny animated ASCII cat who lives in the Omarchy Quattro bar, and looking after Omi is the whole point: feed the cat, pat the cat, keep the cat happy, and watch a small kitten grow into a distinguished animal. Neglect Omi and you will hear about it.
+Omi is a tiny animated ASCII cat who lives in the Omarchy Quattro bar, and looking after Omi is the whole point: feed the cat, pat the cat, keep the cat happy, and watch a small kitten grow into a distinguished animal. Neglect Omi and you will hear about it.
 
 The twist is the food. Omi has a peculiar taste and will eat exactly one thing: tokens. Nobody has managed to talk Omi out of it — and you earn them just by working.
 
