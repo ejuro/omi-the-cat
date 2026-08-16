@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Mpris
 import "Model.js" as Model
 
 Item {
@@ -44,7 +45,25 @@ Item {
   }
   // An unset meal clock is never hungry; loadState anchors it on first run.
   readonly property bool hungry: lastFedAt !== "" && hoursSinceFed >= Model.hungerAfterHours
-  readonly property string mood: Model.mood(happiness, hungry, reaction)
+
+  // Read straight off MPRIS rather than through Omarchy's media service: that
+  // service belongs to another plugin and picks a single "active" player for
+  // the bar, which is a different question from the one asked here. Omi only
+  // wants to know whether the music player is playing, whatever else is.
+  //
+  // Purely cosmetic — dancing pays no JOY and earns no XP, so the cat cannot
+  // be cared for by leaving a track on.
+  readonly property var mprisPlayers: Mpris.players ? Mpris.players.values : []
+  readonly property bool musicPlaying: {
+    for (var i = 0; i < mprisPlayers.length; i++) {
+      var player = mprisPlayers[i]
+      if (!player || !player.isPlaying) continue
+      if (Model.isMusicPlayer(player.dbusName, player.identity, player.desktopEntry)) return true
+    }
+    return false
+  }
+
+  readonly property string mood: Model.mood(happiness, hungry, reaction, musicPlaying)
   readonly property string moodLabel: Model.moodLabel(mood)
   readonly property int progressToBag: Math.max(0, tokenRemainder)
 

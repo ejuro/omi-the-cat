@@ -49,8 +49,11 @@ Panel {
     else game.feed()
   }
 
+  // Reactions and the dance both run on the faster cadence: at 420ms the
+  // four-beat dance loop takes most of two seconds and reads as a slideshow
+  // rather than a cat keeping time.
   Timer {
-    interval: root.game && root.game.reaction !== "" ? 240 : 420
+    interval: root.game && (root.game.reaction !== "" || root.game.mood === "dancing") ? 240 : 420
     running: root.opened
     repeat: true
     onTriggered: root.animationFrame = (root.animationFrame + 1) % 120

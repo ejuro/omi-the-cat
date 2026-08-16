@@ -119,14 +119,41 @@ function settleJoy(happiness, elapsedHours) {
   return { happiness: next, consumedHours: points / joyDecayPerHour }
 }
 
+// The music player Omi dances to. Matched by name rather than by "anything
+// playing" so a video in a browser tab or a notification sound does not start
+// the cat dancing.
+var musicPlayer = "cliamp"
+
+// True when an MPRIS player is that music player. cliamp claims the bus name
+// org.mpris.MediaPlayer2.cliamp and reports its Identity as "Cliamp"; either
+// alone is enough, so a change to one does not silently retire the dance. The
+// bus name is reduced to its leaf first, which also drops the optional
+// ".instanceNNN" suffix MPRIS lets a player append.
+function isMusicPlayer(dbusName, identity, desktopEntry) {
+  var candidates = [dbusName, identity, desktopEntry]
+  for (var i = 0; i < candidates.length; i++) {
+    var value = String(candidates[i] || "").toLowerCase()
+    if (value === "") continue
+    if (value.replace(/^org\.mpris\.mediaplayer2\./, "").split(".")[0] === musicPlayer) return true
+  }
+  return false
+}
+
 // Hunger outranks the JOY moods: an unfed cat says so even when it is
 // otherwise delighted, which is the whole point of giving it a separate clock.
 // A meal hands the mood straight back to the JOY swings below.
-function mood(happiness, hungry, reaction) {
+//
+// Dancing sits just under hunger. It is the one mood driven from outside the
+// game, and it should win over the JOY swings — a cat with music on is doing
+// something more interesting than idling — but not over the one state the
+// user is being asked to act on. An empty bowl is not less urgent because
+// there is a record on.
+function mood(happiness, hungry, reaction, dancing) {
   if (reaction === "pat") return "loved"
   if (reaction === "feed") return "eating"
   if (reaction === "level") return "sparkly"
   if (hungry) return "hungry"
+  if (dancing) return "dancing"
   if (Number(happiness) >= 80) return "happy"
   if (Number(happiness) < 50) return "lonely"
   return "calm"
@@ -144,6 +171,7 @@ function moodLabel(moodName) {
     loved: "FEELS LOVED",
     eating: "NOM NOM NOM",
     sparkly: "LEVEL UP!",
+    dancing: "DANCE PARTY",
     happy: "VERY HAPPY",
     hungry: "NEEDS A SNACK",
     lonely: "WANTS A PAT",
@@ -201,7 +229,7 @@ function helpSections(tokensPerBag) {
   return [
     {
       title: "MEET OMI",
-      body: "A cat who lives in your bar. Omi has a peculiar taste in food and will eat exactly one thing: tokens. Nobody has managed to talk Omi out of it."
+      body: "A cat who lives in your bar. Omi has a peculiar taste in food and will eat exactly one thing: tokens. Nobody has managed to talk Omi out of it. Put a record on in cliamp and Omi will dance to it."
     },
     {
       title: "TOKEN BAGS",
@@ -217,7 +245,7 @@ function helpSections(tokensPerBag) {
     },
     {
       title: "SMALL PRINT",
-      body: "Omi is a cat, not a spy! The token counts come straight from Omarchy's built-in Agents plugin. Nothing else is read."
+      body: "Omi is a cat, not a spy! The token counts come straight from Omarchy's built-in Agents plugin. The only other thing Omi reads is whether cliamp is playing — not the track, not the artist."
     }
   ]
 }

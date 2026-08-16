@@ -27,11 +27,29 @@ function pad(line) {
 // Overwrite characters in-place at a fixed cell position. Frames are
 // composed by stamping small details onto a shared body template, which
 // keeps the silhouette identical between moods.
+//
+// Anything that would land outside the grid is clipped rather than written:
+// the dance leans the head a column either way, and without this a stamp on
+// the far edge would lengthen its row and break the fixed width every other
+// frame relies on.
 function put(rows, row, col, text) {
   var value = String(text || "")
   if (row < 0 || row >= rows.length || value === "") return
+  var start = Math.max(0, col)
+  var visible = value.slice(start - col, start - col + Math.max(0, columns - start))
+  if (visible === "") return
   var line = rows[row]
-  rows[row] = line.slice(0, col) + value + line.slice(col + value.length)
+  rows[row] = line.slice(0, start) + visible + line.slice(start + visible.length)
+}
+
+// Slides a band of rows sideways so the head can lean into the beat while the
+// body stays planted. Rows keep their width — whatever runs off an edge is
+// clipped, which is why the lean is never more than one column.
+function lean(rows, fromRow, toRow, dx) {
+  if (!dx) return
+  for (var row = Math.max(0, fromRow); row <= toRow && row < rows.length; row++) {
+    rows[row] = dx < 0 ? pad(rows[row].slice(-dx)) : pad(" ".repeat(dx) + rows[row])
+  }
 }
 
 // Base sitting body. Face details are stamped on afterwards.
@@ -102,16 +120,41 @@ function stampLegs(rows) {
   put(rows, 11, 15, "|")
 }
 
-// Front paws thrown in the air for the level-up celebration.
+// A single front paw thrown in the air, hinged at the shoulder. Raised one at
+// a time this is the dance; raised together it is the level-up celebration.
+//
+// `offset` follows the head's lean, because the paw is anchored to the
+// shoulder: without it a paw raised on the leaning side would be drawn over
+// the head wall it is supposed to sit beside. One column is all the grid has
+// to spare, so the tip caps flat against the edge rather than reaching past it.
+function stampPaw(rows, side, offset) {
+  var dx = Math.round(Number(offset) || 0)
+  if (side === "left") {
+    put(rows, 1, Math.max(0, dx), "_")
+    put(rows, 2, Math.max(0, 1 + dx), "\\")
+    put(rows, 3, 2 + dx, "\\")
+    put(rows, 4, 3 + dx, "\\")
+  } else {
+    put(rows, 1, Math.min(columns - 1, 26 + dx), "_")
+    put(rows, 2, Math.min(columns - 1, 25 + dx), "/")
+    put(rows, 3, 24 + dx, "/")
+    put(rows, 4, 23 + dx, "/")
+  }
+}
+
+// Both front paws up, for the level-up celebration.
 function stampArms(rows) {
-  put(rows, 1, 0, "_")
-  put(rows, 2, 1, "\\")
-  put(rows, 3, 2, "\\")
-  put(rows, 4, 3, "\\")
-  put(rows, 1, 26, "_")
-  put(rows, 2, 25, "/")
-  put(rows, 3, 24, "/")
-  put(rows, 4, 23, "/")
+  stampPaw(rows, "left")
+  stampPaw(rows, "right")
+}
+
+// Music notes drifting over the cat while it dances. Each note travels on its
+// own path so the effects row reads as notes in the air rather than a block
+// sliding back and forth.
+function stampNotes(rows, step) {
+  put(rows, 0, 1 + step, "♪")
+  put(rows, 0, 14 - step, "♫")
+  put(rows, 0, 20 + step, "♪")
 }
 
 // Tail overlays in the free cells right of the body.
@@ -205,6 +248,31 @@ function frame(mood, tick) {
     stampDish(rows, alternate ? "half" : "full")
     stampTail(rows, "restA")
     speech = alternate ? "cronch!" : "nom nom"
+  } else if (mood === "dancing") {
+    // Four beats: paw up leaning left, both paws up, paw up leaning right,
+    // both paws up. The head leans into whichever paw is raised, so the lean
+    // and the paw always read as one move rather than two.
+    var step = t % 4
+    var tilt = step === 0 ? -1 : step === 2 ? 1 : 0
+    rows = sittingBody()
+    stampLegs(rows)
+    put(rows, 4, 9, "^")
+    put(rows, 4, 17, "^")
+    // Singing along: the mouth opens on the paw-up beats.
+    put(rows, 5, 13, tilt === 0 ? "w" : "o")
+    // Whiskers sit on the mouth row alone, as in the level-up pose: the usual
+    // row-4 pair would be drawn straight through a raised paw.
+    put(rows, 5, 2, "--")
+    put(rows, 5, 23, "--")
+    lean(rows, 1, 5, tilt)
+    if (tilt === 0) stampArms(rows)
+    else stampPaw(rows, tilt < 0 ? "left" : "right", tilt)
+    stampNotes(rows, step)
+    stampTail(rows, flip ? "upA" : "upB")
+    // Two dance beats per phrase rather than the usual one. The dance runs at
+    // roughly half the frame interval of the other moods, and on `alternate`
+    // the speech would swap about twice a second and read as flicker.
+    speech = t % 8 >= 4 ? "boogie!" : "la la la~"
   } else if (mood === "sparkly") {
     rows = sittingBody()
     stampArms(rows)

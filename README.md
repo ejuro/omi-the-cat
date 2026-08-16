@@ -11,12 +11,14 @@ The twist is the food. Omi has a peculiar taste and will eat exactly one thing: 
 - **Token Bags.** Omi will not be satisfied by a token here and there — it takes a proper chunk. That chunk is a Token Bag: 1,000,000 tokens. You earn them just by working; whenever your agents chew through that many, another lands in the pantry. The pantry holds 10, and bags earned past a full pantry are not banked.
 - **Feeding.** One bag per meal. Omi needs feeding at least once every 24 hours and will make that abundantly clear, but never says no to seconds. Feeding is also how Omi grows up.
 - **Pats.** Besides food, there is one other thing Omi likes: pats. Especially behind the ear. It is free, there is no limit, and it makes Omi happy.
+- **Dancing.** Start playing something in [cliamp](https://github.com/bjarneo/cliamp) and Omi will dance along for as long as the music runs. It is pure decoration — no JOY, no XP — and a hungry cat still asks for food first.
 
-Omi is a cat, not a spy. The token counts come straight from Omarchy's built-in **Agents** plugin, and nothing else is read — see [where the token counts come from](#where-the-token-counts-come-from).
+Omi is a cat, not a spy. The token counts come straight from Omarchy's built-in **Agents** plugin — see [where the token counts come from](#where-the-token-counts-come-from). The only other thing Omi reads is whether cliamp is currently playing, over the same MPRIS interface every media widget on the desktop uses. Not the track, not the artist, not the file — only playing or not.
 
 ## Features
 
-- Theme-aware ASCII cat with idle, blink, ear-twitch, tail, pat, eating, hungry, lonely, and level-up frames
+- Theme-aware ASCII cat with idle, blink, ear-twitch, tail, pat, eating, hungry, lonely, dancing, and level-up frames
+- Dances whenever cliamp is playing, read from its MPRIS status — no polling and no extra processes
 - A single Nerd Font glyph in the bar, coloured urgent only when Omi is hungry
 - Built-in `[?]` help covering everything above, in the panel
 - Pat and feed by mouse or keyboard

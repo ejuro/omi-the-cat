@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.ejuro.omi-the-cat",
   "name": "Omi the Cat",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "ejuro",
   "license": "MIT",
   "description": "Omi, a tiny ASCII cat who lives in your bar and eats nothing but tokens.",
